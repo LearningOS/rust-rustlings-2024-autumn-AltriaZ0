@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -38,6 +37,22 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        // 添加新元素到数组末尾
+        self.items.push(value);
+        self.count += 1;
+        
+        // 向上调整堆
+        let mut idx = self.count;
+        while idx > 1 {
+            let parent = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[parent]) {
+                // 如果当前节点满足比较条件(最小堆时小于父节点，最大堆时大于父节点)，则交换
+                self.items.swap(idx, parent);
+                idx = parent;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +72,25 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        // 如果没有子节点，返回当前索引
+        if !self.children_present(idx) {
+            return idx;
+        }
+        
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        
+        // 如果只有左子节点
+        if right > self.count {
+            return left;
+        }
+        
+        // 比较左右子节点，返回满足比较条件的那个节点的索引
+        if (self.comparator)(&self.items[left], &self.items[right]) {
+            left
+        } else {
+            right
+        }
     }
 }
 
@@ -84,8 +116,37 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None;
+        }
+        
+        // 取出根节点
+        let result = std::mem::replace(&mut self.items[1], T::default());
+        
+        // 将最后一个元素移到根节点
+        if self.count > 1 {
+            self.items[1] = self.items.pop().unwrap();
+        } else {
+            self.items.pop();
+        }
+        
+        self.count -= 1;
+        
+        // 向下调整堆
+        if self.count > 0 {
+            let mut current = 1;
+            while self.children_present(current) {
+                let child = self.smallest_child_idx(current);
+                if (self.comparator)(&self.items[child], &self.items[current]) {
+                    self.items.swap(current, child);
+                    current = child;
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        Some(result)
     }
 }
 

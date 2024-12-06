@@ -2,7 +2,7 @@
 	graph
 	This problem requires you to implement a basic graph functio
 */
-// I AM NOT DONE
+
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -30,6 +30,32 @@ impl Graph for UndirectedGraph {
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+        let (from, to, weight) = edge;
+        
+        // 确保两个节点都存在
+        self.add_node(from);
+        self.add_node(to);
+        
+        // 因为是无向图，所以需要添加双向边
+        // 添加 from -> to 的边
+        if let Some(edges) = self.adjacency_table_mutable().get_mut(from) {
+            // 检查边是否已存在，如果存在则更新权重
+            if let Some(existing_edge) = edges.iter_mut().find(|(node, _)| node == to) {
+                existing_edge.1 = weight;
+            } else {
+                edges.push((String::from(to), weight));
+            }
+        }
+        
+        // 添加 to -> from 的边
+        if let Some(edges) = self.adjacency_table_mutable().get_mut(to) {
+            // 检查边是否已存在，如果存在则更新权重
+            if let Some(existing_edge) = edges.iter_mut().find(|(node, _)| node == from) {
+                existing_edge.1 = weight;
+            } else {
+                edges.push((String::from(from), weight));
+            }
+        }
     }
 }
 pub trait Graph {
@@ -38,10 +64,16 @@ pub trait Graph {
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
         //TODO
-		true
+		if self.contains(node) {
+            false // 如果节点已存在，返回 false
+        } else {
+            self.adjacency_table_mutable().insert(String::from(node), Vec::new());
+            true // 添加成功返回 true
+        }
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+        // 默认空实现，因为具体实现已经在 UndirectedGraph 中完成
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
